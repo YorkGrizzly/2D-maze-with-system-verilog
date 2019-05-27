@@ -14,16 +14,16 @@ output reg out_valid;
 output reg maze_not_valid;
 output reg [3:0]out_x, out_y ;
 
-logic out_valid_ns;
-logic maze_not_valid_ns;
-logic [3:0] out_x_ns, out_y_ns ;
+logic out_valid_next;
+logic maze_not_valid_next;
+logic [3:0] out_x_next, out_y_next ;
 
 // [x][y] or [y][x] ?
 logic map [0:14][0:14];
-logic map_ns [0:14][0:14];
+logic map_next [0:14][0:14];
 
 logic [7:0] counter_in;
-logic [7:0] counter_in_ns;
+logic [7:0] counter_in_next;
 
 // reset -> waiting for input -> input -> begin to find 
 // if found -> go back and output the path at same time
@@ -47,11 +47,11 @@ always_ff @( posedge clk or negedge rst_n ) begin
 		counter_in <= 0;
 	end else begin
 		now <= next;
-		map <= map_ns;
-		out_valid <= out_valid_ns;
-		maze_not_valid <= maze_not_valid_ns;
-		out_x <= out_x_ns;
-		out_y <= out_y_ns;
+		map <= map_next;
+		out_valid <= out_valid_next;
+		maze_not_valid <= maze_not_valid_next;
+		out_x <= out_x_next;
+		out_y <= out_y_next;
 	end
 end
 
@@ -80,28 +80,28 @@ always_comb begin
 		 end;
 		default:
 	endcase
-	out_valid_ns = now == BACK;
-	maze_not_valid_ns = now == DEAD;
-	out_x_ns = ;
-	out_y_ns = ;
-	map_ns = map;
+	out_valid_next = now == BACK;
+	maze_not_valid_next = now == DEAD;
+	out_x_next = ;
+	out_y_next = ;
+	map_next = map;
 	if(in_valid) begin
-		counter_in_ns = counter_in + 1;
-		map_ns[14][0:14] = {map[14][1:14], maze};
-		map_ns[13][0:14] = {map[13][1:14], map[14:0]};
-		map_ns[12][0:14] = {map[12][1:14], map[13:0]};
-		map_ns[11][0:14] = {map[11][1:14], map[12:0]};
-		map_ns[10][0:14] = {map[10][1:14], map[11:0]};
-		map_ns[9][0:14] = {map[9][1:14], map[10:0]};
-		map_ns[8][0:14] = {map[8][1:14], map[9:0]};
-		map_ns[7][0:14] = {map[7][1:14], map[8:0]};
-		map_ns[6][0:14] = {map[6][1:14], map[7:0]};
-		map_ns[5][0:14] = {map[5][1:14], map[6:0]};
-		map_ns[4][0:14] = {map[4][1:14], map[5:0]};
-		map_ns[3][0:14] = {map[3][1:14], map[4:0]};
-		map_ns[2][0:14] = {map[2][1:14], map[3:0]};
-		map_ns[1][0:14] = {map[1][1:14], map[2:0]};
-		map_ns[0][0:14] = {map[0][1:14], map[1:0]};
+		counter_in_next = counter_in + 1;
+		map_next[14][0:14] = {map[14][1:14], maze};
+		map_next[13][0:14] = {map[13][1:14], map[14:0]};
+		map_next[12][0:14] = {map[12][1:14], map[13:0]};
+		map_next[11][0:14] = {map[11][1:14], map[12:0]};
+		map_next[10][0:14] = {map[10][1:14], map[11:0]};
+		map_next[9][0:14] = {map[9][1:14], map[10:0]};
+		map_next[8][0:14] = {map[8][1:14], map[9:0]};
+		map_next[7][0:14] = {map[7][1:14], map[8:0]};
+		map_next[6][0:14] = {map[6][1:14], map[7:0]};
+		map_next[5][0:14] = {map[5][1:14], map[6:0]};
+		map_next[4][0:14] = {map[4][1:14], map[5:0]};
+		map_next[3][0:14] = {map[3][1:14], map[4:0]};
+		map_next[2][0:14] = {map[2][1:14], map[3:0]};
+		map_next[1][0:14] = {map[1][1:14], map[2:0]};
+		map_next[0][0:14] = {map[0][1:14], map[1:0]};
 	end
 end
 
