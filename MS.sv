@@ -21,6 +21,7 @@ logic [3:0] out_x_next, out_y_next ;
 // [x][y] or [y][x] ?
 logic map [0:14][0:14];
 logic map_next [0:14][0:14];
+logic map_was_here [0:14][0:14];
 
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
@@ -52,33 +53,20 @@ always_ff @( posedge clk or negedge rst_n ) begin
 		maze_not_valid <= maze_not_valid_next;
 		out_x <= out_x_next;
 		out_y <= out_y_next;
+		counter_in <= counter_in_next;
 	end
 end
 
 always_comb begin
 	next = now;
 	case(now)
-		IDLE:begin
-			// input done -> find
-			if (counter_in == 8'd224)
-				next = FIND;
-		end
- 		FIND:begin
-			if (conditions) begin
-				
-			end
-		 end;
- 		BACK:begin
-			if (conditions) begin
-
-			end
-		 end;
- 		DEAD:begin
-			if (conditions) begin
-				
-			end
-		 end;
-		default:
+		IDLE: if (counter_in == 8'd224) next = FIND; // 開始找			
+ 		FIND:
+			if (conditions) next = BACK; //找到了
+		 	else if(counter_queue == 4'd0) next = DEAD; //找不到	
+ 		BACK: if (conditions) next = IDLE;//輸出完
+	
+ 		DEAD: if (conditions) next = IDLE; //輸出完
 	endcase
 	out_valid_next = now == BACK;
 	maze_not_valid_next = now == DEAD;
@@ -110,34 +98,73 @@ end
 
 
 
-
-
-
 logic [3:0] queue_bfs_x[0:12];
 logic [3:0] queue_bfs_y[0:12];
+
+
+
+
+
+logic [3:0] queue_bfs_x_next[0:12];
+logic [3:0] queue_bfs_y_next[0:12];
 logic [3:0] position_x;// current position x
 logic [3:0] position_y;// current position y
 logic [3:0] counter_queue;// queue index
-// position <= queue
-if (position == 8'b11011101) begin
+logic [3:0] counter_queue_next;
+
+counter_queue <= counter_queue_next;
+
+//存入起點
+queue_bfs_x_next[0] <= 1;
+queue_bfs_y_next[0] <= 1;
+counter_queue_next <= 1;
+map_was_here <= 0; //二維可以這樣歸零??
+
+
+
+//pop queue
+
+//current cycle
+position_x <= queue_bfs_x[counter_queue];
+position_y <= queue_bfs_y[counter_queue];
+counter_queue_next <= counter_queue - 1;
+
+//next cycle
+map_was_here[position_x][position_y] <= 1;
+
+
+queue_bfs_x_next <= {queue_bfs_x[1:12], 0};
+queue_bfs_y_next <= {queue_bfs_y[1:12], 0};
+
+if (position_x == 13 && position_y == 13) begin //找到終點
 	//found
 end
+
+counter_queue_next = counter_queue;
+
+if (!map[position_x - 1][position_y]) begin //上
+	queue_bfs_x_next[counter_queue] = position_x - 1;
+	queue_bfs_y_next[counter_queue] = position_y;
+	
 end
-//up -> left -> down -> right
-if (!map[position_x][position_y]) begin
-	// position + ? => queue
+	if (!map[position_x][position_y - 1]) begin //左
+	queue_bfs_x_next[counter_queue] = position_x;
+	queue_bfs_x_next[counter_queue] = position_y - 1;
+
 end
-if (!map[position_x][position_y]) begin
-	// position + ? => queue
+	if (!map[position_x + 1][position_y]) begin //下
+	queue_bfs_x_next[counter_queue] = position_x + 1;
+	queue_bfs_x_next[counter_queue] = position_y;
+
 end
-if (!map[position_x][position_y]) begin
-	// position + ? => queue
+	if (!map[position_x][position_y + 1]) begin //右
+	queue_bfs_x_next[counter_queue] = position_x;
+	queue_bfs_x_next[counter_queue] = position_y + 1;
+
 end
-if (!map[position_x][position_y]) begin
-	// position + ? => queue
-end
-if (counter_queue == 4'd0) begin
-	// queue empty => dead	
-end
+// if (counter_queue == 4'd0) begin
+	
+// 	// queue empty => dead	
+// end
 
 endmodule
