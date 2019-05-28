@@ -100,11 +100,6 @@ end
 
 logic [3:0] queue_bfs_x[0:12];
 logic [3:0] queue_bfs_y[0:12];
-
-
-
-
-
 logic [3:0] queue_bfs_x_next[0:12];
 logic [3:0] queue_bfs_y_next[0:12];
 logic [3:0] position_x;// current position x
