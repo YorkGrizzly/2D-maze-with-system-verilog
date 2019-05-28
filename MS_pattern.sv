@@ -38,6 +38,7 @@ initial begin
   $fscanf(output_file_x, "%d", goldnum); //scan TA file for number of outputs
   $fscanf(output_file_y, "%d", goldnum); //scan TA file for number of outputs
   check_output;
+  YOU_PASS_task;
 end
 outvalid_timeout;//check for over 1000 cycles, counts after input finishes and resets after output
 check_output;
