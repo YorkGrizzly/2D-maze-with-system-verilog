@@ -65,7 +65,7 @@ always_comb begin
 			if (position_x==13 && position_y==13) next = BACK; //找到了
 		 	else if(counter_queue == 4'd0) next = DEAD; //找不到	
  		BACK: if (position_x==1 && position_y==1) next = IDLE;//輸出完
- 		DEAD: next = IDLE; //輸出完
+ 		DEAD: if (counter_queue==0) next = IDLE; //輸出完
 	endcase
 	out_valid_next = (now == BACK)||(now == DEAD);
 	maze_not_valid_next = now == DEAD;
@@ -108,6 +108,7 @@ logic [3:0] position_y_next;// current position y
 logic [3:0] counter_queue;// queue index, queue 有幾個東西
 logic [3:0] counter_queue_next;
 
+// ff
 queue_bfs_x <= queue_bfs_x_next;
 queue_bfs_y <= queue_bfs_y_next;
 position_x <= position_x_next;
@@ -115,57 +116,69 @@ position_y <= position_y_next;
 counter_queue <= counter_queue_next;
 map_was_here <= map_was_here_next;
 
-//存入起點，一開始做的，只做一次
-queue_bfs_x_next[0] <= 1;
-queue_bfs_y_next[0] <= 1;
-counter_queue_next <= 1;
-position_x <= 0;
-position_y <= 0;
-map_was_here <= 0; //二維可以這樣歸零??
+// comb
+//一開始做的，只做一次
+queue_bfs_x_next = 0;
+queue_bfs_y_next = 0;
+counter_queue_next = 0;
+position_x_next = 1;
+position_y_next = 1;
+map_was_here_next = 0; //二維可以這樣歸零??
 
 
 map_was_here_next = map_was_here;
-//pop queue
+counter_queue_next = counter_queue;
+position_x_next = position_x;
+position_y_next = position_y;
+queue_bfs_x_next = queue_bfs_x;
+queue_bfs_y_next = queue_bfs_y;
+
+
+
+logic[1:0] direction, direction_next; //0:上 1:左 2:下 3:右，現在所在方向
+//comb
+parameter UP = 0, DOWN = 2, LEFT = 1, RIGHT = 3;
+direction_next = direction;
+//ff
+direction <= direction_next;
+
 
 //current cycle
-position_x_next = queue_bfs_x[counter_queue - 1];
-position_y_next = queue_bfs_y[counter_queue - 1];
-counter_queue_next <= counter_queue - 1;
-map_was_here_next[position_x][position_y] <= 1;
-
-
-queue_bfs_x_next <= {queue_bfs_x[1:12], 0};
-queue_bfs_y_next <= {queue_bfs_y[1:12], 0};
-
 if (position_x == 13 && position_y == 13) begin //找到終點
 	//found
 end
 
-counter_queue_next = counter_queue;
 
-if (!map[position_x - 1][position_y]) begin //上
+if (!map[position_x - 1][position_y] && direction <= UP) begin //上
 	queue_bfs_x_next[counter_queue] = position_x - 1;
 	queue_bfs_y_next[counter_queue] = position_y;
-	
-end
-	if (!map[position_x][position_y - 1]) begin //左
+	counter_queue_next = counter_queue + 1;
+	direction_next = LEFT;
+end else if (!map[position_x][position_y - 1] && direction <= LEFT) begin //左
 	queue_bfs_x_next[counter_queue] = position_x;
 	queue_bfs_x_next[counter_queue] = position_y - 1;
-
-end
-	if (!map[position_x + 1][position_y]) begin //下
+	counter_queue_next = counter_queue + 1;
+	direction_next = DOWN;
+end else if (!map[position_x + 1][position_y] && direction <= DOWN) begin //下
 	queue_bfs_x_next[counter_queue] = position_x + 1;
 	queue_bfs_x_next[counter_queue] = position_y;
-
-end
-	if (!map[position_x][position_y + 1]) begin //右
+	counter_queue_next = counter_queue + 1;
+	direction_next = RIGHT;
+end else if (!map[position_x][position_y + 1]) begin //右
 	queue_bfs_x_next[counter_queue] = position_x;
 	queue_bfs_x_next[counter_queue] = position_y + 1;
-
+	counter_queue_next = counter_queue + 1;
+end else if ( counter_queue > 0 ) begin
+	position_x_next = queue_bfs_x[counter_queue - 1];
+	position_y_next = queue_bfs_y[counter_queue - 1];
+	counter_queue_next = counter_queue - 1;
+	map_was_here_next[position_x][position_y] = 1;
+	direction_next = UP;
+	//pop queue
+	queue_bfs_x_next = {queue_bfs_x[1:12], 0};
+	queue_bfs_y_next = {queue_bfs_y[1:12], 0};
+end else begin
+	// queue empty => dead	
 end
-// if (counter_queue == 4'd0) begin
-	
-// 	// queue empty => dead	
-// end
 
 endmodule
