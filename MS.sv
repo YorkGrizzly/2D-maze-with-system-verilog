@@ -18,7 +18,6 @@ logic out_valid_next;
 logic maze_not_valid_next;
 logic [3:0] out_x_next, out_y_next ;
 
-// [x][y] or [y][x] ?
 logic map [0:14][0:14];
 logic map_next [0:14][0:14];
 logic map_was_here [0:14][0:14];

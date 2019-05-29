@@ -78,9 +78,9 @@ task outvalid_timeout; begin
   always@(negedge clk) begin
     if(in_valid===1||out_valid===1) lat = 0;
     else lat = lat + 1;
-    if(lat > 1000) begin
+    if(lat > 3000) begin
       $display("---------------------------------------------\n\n");
-      $display("        Latency over 1000 cycles!            \n\n");
+      $display("        Latency over 3000 cycles!            \n\n");
       $display("---------------------------------------------");
       #(1000.0); $finish;
     end
