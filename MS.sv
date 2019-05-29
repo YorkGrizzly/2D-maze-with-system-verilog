@@ -22,6 +22,7 @@ logic [3:0] out_x_next, out_y_next ;
 logic map [0:14][0:14];
 logic map_next [0:14][0:14];
 logic map_was_here [0:14][0:14];
+logic map_was_here_next [0:14][0:14];
 
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
@@ -104,28 +105,35 @@ logic [3:0] queue_bfs_x_next[0:12];
 logic [3:0] queue_bfs_y_next[0:12];
 logic [3:0] position_x;// current position x
 logic [3:0] position_y;// current position y
-logic [3:0] counter_queue;// queue index
+logic [3:0] position_x_next;// current position x
+logic [3:0] position_y_next;// current position y
+logic [3:0] counter_queue;// queue index, queue 有幾個東西
 logic [3:0] counter_queue_next;
 
+queue_bfs_x <= queue_bfs_x_next;
+queue_bfs_y <= queue_bfs_y_next;
+position_x <= position_x_next;
+position_y <= position_y_next;
 counter_queue <= counter_queue_next;
+map_was_here <= map_was_here_next;
 
-//存入起點
+//存入起點，一開始做的，只做一次
 queue_bfs_x_next[0] <= 1;
 queue_bfs_y_next[0] <= 1;
 counter_queue_next <= 1;
+position_x <= 0;
+position_y <= 0;
 map_was_here <= 0; //二維可以這樣歸零??
 
 
-
+map_was_here_next = map_was_here;
 //pop queue
 
 //current cycle
-position_x <= queue_bfs_x[counter_queue];
-position_y <= queue_bfs_y[counter_queue];
+position_x_next = queue_bfs_x[counter_queue - 1];
+position_y_next = queue_bfs_y[counter_queue - 1];
 counter_queue_next <= counter_queue - 1;
-
-//next cycle
-map_was_here[position_x][position_y] <= 1;
+map_was_here_next[position_x][position_y] <= 1;
 
 
 queue_bfs_x_next <= {queue_bfs_x[1:12], 0};
