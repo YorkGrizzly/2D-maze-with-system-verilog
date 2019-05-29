@@ -65,10 +65,9 @@ always_comb begin
 			if (position_x==13 && position_y==13) next = BACK; //找到了
 		 	else if(counter_queue == 4'd0) next = DEAD; //找不到	
  		BACK: if (position_x==1 && position_y==1) next = IDLE;//輸出完
-	
- 		DEAD: if (counter_queue==0) next = IDLE; //輸出完
+ 		DEAD: next = IDLE; //輸出完
 	endcase
-	out_valid_next = now == BACK;
+	out_valid_next = (now == BACK)||(now == DEAD);
 	maze_not_valid_next = now == DEAD;
 	out_x_next = ;
 	out_y_next = ;
