@@ -51,6 +51,7 @@ parameter DEAD = 2'd3;
 logic [1:0] now;
 logic [1:0] next;
 
+// state & I/O
 always_ff @( posedge clk or negedge rst_n ) begin
 	if (!rst_n) begin
 		now <= IDLE;
@@ -81,10 +82,16 @@ always_comb begin
  		BACK: if (position_x==1 && position_y==1) next = IDLE;
  		DEAD: if (counter_queue==0) next = IDLE;
 	endcase
-	out_valid_next = (now == BACK)||(now == DEAD);
-	maze_not_valid_next = now == DEAD;
-	out_x_next = position_x;
-	out_y_next = position_y;
+	if (now == DEAD || now == BACK) begin
+		out_valid_next = (now == BACK)||(now == DEAD);
+	end
+	if (now == DEAD) begin
+		maze_not_valid_next = now == DEAD;
+	end
+	if (now == BACK) begin
+		out_x_next = position_x;
+		out_y_next = position_y;
+	end
 	map_next = map;
 	if(in_valid) begin
 		counter_in_next = counter_in + 1;
@@ -113,7 +120,7 @@ end
 
 
 
-
+// find
 
 // ff
 always_ff @( posedge clk or negedge rst_n ) begin
@@ -191,13 +198,27 @@ always_comb begin
 			counter_queue_next = counter_queue - 1;
 			// map_was_here_next[position_x][position_y] = 1;
 			direction_next = UP;
-			//pop queue
+			// pop queue
 			queue_bfs_x_next = {queue_bfs_x[1:12], 0};
 			queue_bfs_y_next = {queue_bfs_y[1:12], 0};
 		end else begin
 			// queue empty => dead	
-	end
 		end
+	end
 end
+
+
+
+
+
+// back
+
+// ff
+// comb
+
+
+
+
+
 
 endmodule
