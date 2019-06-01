@@ -36,75 +36,66 @@ always	#(CYCLE/2.0) clk = ~clk;
 
 initial begin
   clk = 0;
-end
+  in_valid = 0;
+  maze = 0;
 
-initial begin
   input_file = $fopen("input.txt", "r");
   output_file_x = $fopen("out_x.txt", "r");
   output_file_y = $fopen("out_y.txt", "r");
   reset_check;
-  $display("hello anybody here?");
   give_input;
   f = $fscanf(output_file_x, "%d", goldnum); //scan TA file for number of outputs
   f = $fscanf(output_file_y, "%d", goldnum); //scan TA file for number of outputs
-  // check_output;
-  repeat(1000)@(negedge clk);
+  repeat(4000)@(negedge clk);
   YOU_PASS_task;
 end
-// outvalid_timeout;//check for over 1000 cycles, counts after input finishes and resets after output
-// check_output;
-//k = $fscanf(input_file, "%d", maze); need k????
 
-// task check_output; begin
-  always@(negedge clk) begin
-    if(out_valid===1) begin
-      outcount = outcount + 1;
-      f = $fscanf(output_file_x, "%d", gold_x);
-      f = $fscanf(output_file_y, "%d", gold_y);
-      if(out_x!==gold_x||out_y!==gold_y) begin  //wrong output
-        $display("---------------------------------------------\n\n");
-        $display("   correct answer x: %d, y: %d\n   your answer  out_x: %d, out_y: %d  at %t\n\n", gold_x,   gold_y, out_x, out_y, $time);
-        $display("---------------------------------------------");
-        repeat(4)@(negedge clk); $finish;
-      end
-    end
-    else if(out_valid===0 && outcount!== 0) begin //wrong path length
-      $display("hello anybody here?");
-      if(outcount < goldnum) begin
-        $display("---------------------------------------------\n\n");
-        $display("    You haven't finished giving the path!\n\n");
-        $display("---------------------------------------------");
-        repeat(4)@(negedge clk); $finish;
-      end else if(outcount > goldnum) begin
-        $display("---------------------------------------------\n\n");
-        $display("    Your path is too long!\n\n");
-        $display("---------------------------------------------");
-        repeat(4)@(negedge clk); $finish;        
-      end
-      else outcount = 0;
-    end
-  end
-// end endtask
 
-// task outvalid_timeout; begin
-  always@(negedge clk) begin
-    if(in_valid===1||out_valid===1) lat = 0;
-    else lat = lat + 1;
-    if(lat > 3000) begin
+always@(negedge clk) begin
+  if(out_valid===1) begin
+    outcount = outcount + 1;
+    f = $fscanf(output_file_x, "%d", gold_x);
+    f = $fscanf(output_file_y, "%d", gold_y);
+    if(out_x!==gold_x||out_y!==gold_y) begin  //wrong output
       $display("---------------------------------------------\n\n");
-      $display("        Latency over 3000 cycles!            \n\n");
+      $display("   correct answer x: %d, y: %d\n   your answer  out_x: %d, out_y: %d  at %t\n\n", gold_x,   gold_y, out_x, out_y, $time);
       $display("---------------------------------------------");
-      #(1000.0); $finish;
+      repeat(4)@(negedge clk); $finish;
     end
   end
-// end endtask
+  else if(out_valid===0 && outcount!== 0) begin //wrong path length
+    if(outcount < goldnum) begin
+      $display("---------------------------------------------\n\n");
+      $display("    You haven't finished giving the path!\n\n");
+      $display("---------------------------------------------");
+      repeat(4)@(negedge clk); $finish;
+    end else if(outcount > goldnum) begin
+      $display("---------------------------------------------\n\n");
+      $display("    Your path is too long!\n\n");
+      $display("---------------------------------------------");
+      repeat(4)@(negedge clk); $finish;        
+    end
+    else outcount = 0;
+  end
+end
+
+always@(negedge clk) begin
+  if(in_valid===1||out_valid===1) lat = 0;
+  else lat = lat + 1;
+  if(lat > 3000) begin
+    $display("---------------------------------------------\n\n");
+    $display("        Latency over 3000 cycles!            \n\n");
+    $display("---------------------------------------------");
+    #(1000.0); $finish;
+  end
+end
+
 
 task give_input; begin
   @(negedge clk);
   in_valid = 1;
   for(invalid_count = 0; invalid_count < 225; invalid_count = invalid_count + 1) begin
     f = $fscanf(input_file, "%d", maze);
-    $display("maze = %d, number %d input", maze, invalid_count);
     @(negedge clk);
   end
   in_valid = 0;
@@ -114,7 +105,6 @@ task reset_check; begin
   rst_n = 1;
   #(5.0); rst_n = 0;
   #(20.0);
-  $display("reset task running");
   if((out_valid!==0)||(maze_not_valid!==0)||(out_x!==0)||(out_y!==0)) begin
     $display("------------------------------------------------\n\n");
     $display("      reset signal!\n\n");
