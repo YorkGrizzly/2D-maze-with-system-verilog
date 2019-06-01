@@ -46,7 +46,7 @@ initial begin
   give_input;
   f = $fscanf(output_file_x, "%d", goldnum); //scan TA file for number of outputs
   f = $fscanf(output_file_y, "%d", goldnum); //scan TA file for number of outputs
-  repeat(4000)@(negedge clk);
+  repeat(3100)@(negedge clk);
   YOU_PASS_task;
 end
 
