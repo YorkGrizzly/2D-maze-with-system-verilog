@@ -22,15 +22,9 @@ logic map [0:14][0:14];
 logic map_next [0:14][0:14];
 logic map_was_here [0:14][0:14];
 logic map_was_here_next [0:14][0:14];
-
-
-
-
+//coming from which direction
 logic [1:0]map_directions [0:14][0:14];
 logic [1:0]map_directions_next [0:14][0:14];
-//coming from which direction
-
-
 
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
@@ -41,25 +35,27 @@ logic [3:0] queue_bfs_x_next[0:12];
 logic [3:0] queue_bfs_y_next[0:12];
 logic [3:0] position_x;// current position x
 logic [3:0] position_y;// current position y
-logic [3:0] position_x_next;// current position x
-logic [3:0] position_y_next;// current position y
+logic [3:0] position_x_next;
+logic [3:0] position_y_next;
+
 logic signed [4:0] counter_queue;// queue index
 logic signed [4:0] counter_queue_next;
 
-logic[2:0] direction, direction_next;
-parameter DOWN = 3, UP = 1, RIGHT = 0, LEFT = 2, OVER = 4;
+parameter RIGHT = 0;
+parameter UP 	= 1;
+parameter LEFT 	= 2;
+parameter DOWN 	= 3;
 
+logic [1:0] now;
+logic [1:0] next;
 parameter IDLE = 2'd0;
 parameter FIND = 2'd1;
 parameter BACK = 2'd2;
 parameter DEAD = 2'd3;
 
-logic [1:0] now;
-logic [1:0] next;
-
-// state & I/O
 always_ff @( posedge clk or negedge rst_n ) begin
 	if (!rst_n) begin
+	// inputting
 		now <= IDLE;
 		map <= '{default:0};
 		out_valid <= 0;
@@ -67,7 +63,17 @@ always_ff @( posedge clk or negedge rst_n ) begin
 		out_x <= 0;
 		out_y <= 0;
 		counter_in <= 0;
+
+	// running
+		queue_bfs_x <= '{default:0};
+		queue_bfs_y <= '{default:0};
+	  	map_was_here <= '{default:0};
+		position_x <= 0;
+		position_y <= 0;
+		counter_queue <= 0;
+		map_directions <= '{default:0};
 	end else begin
+	// inputting
 		now <= next;
 		map <= map_next;
 		out_valid <= out_valid_next;
@@ -75,35 +81,37 @@ always_ff @( posedge clk or negedge rst_n ) begin
 		out_x <= out_x_next;
 		out_y <= out_y_next;
 		counter_in <= counter_in_next;
+
+	// running
+		queue_bfs_x <= queue_bfs_x_next;
+		queue_bfs_y <= queue_bfs_y_next;
+	  	map_was_here <= map_was_here_next;
+		position_x <= position_x_next;
+		position_y <= position_y_next;
+		counter_queue <= counter_queue_next;
+		map_directions <= map_directions_next;
 	end
 end
 
 always_comb begin
+	// default first!!
 	next = now;
 	out_valid_next = 0;
 	maze_not_valid_next = 0;
 	counter_in_next = 0;
-	case(now)
-		IDLE: if (counter_in == 8'd224)
-					if (map[1][2]==1 || map[13][14]==1) next = DEAD;
-					else next = FIND;
- 		FIND:
-			if (position_x==13 && position_y==13) next = BACK;
-			else if(counter_queue == -1) next = DEAD;
- 		BACK: if (position_x==1 && position_y==1) next = IDLE;
- 		DEAD: next = IDLE;
-	endcase
-	if (now == DEAD || now == BACK) begin
-		out_valid_next = (now == BACK)||(now == DEAD);
-	end
-	if (now == DEAD) begin
-		maze_not_valid_next = now == DEAD;
-	end
-	if (now == BACK) begin
-		out_x_next = position_y;
-		out_y_next = position_x;
-	end
 	map_next = map;
+	out_x_next = 0;
+	out_y_next = 0;
+	
+	map_was_here_next = map_was_here;
+	counter_queue_next = counter_queue;
+	position_x_next = position_x;
+	position_y_next = position_y;
+	queue_bfs_x_next = queue_bfs_x;
+	queue_bfs_y_next = queue_bfs_y;
+	map_directions_next = map_directions;
+
+	// input
 	if(in_valid) begin
 		counter_in_next = counter_in + 1;
 		map_next[14][0:14] = {map[14][1:14], maze};
@@ -122,192 +130,123 @@ always_comb begin
 		map_next[1][0:14] =  {map[1][1:14], map[2][0]};
 		map_next[0][0:14] =  {map[0][1:14], map[1][0]};
 	end
-end
 
-// traversing operations
-always_ff @( posedge clk or negedge rst_n ) begin
-	if ( !rst_n ) begin
-		queue_bfs_x <= '{default:0};
-		queue_bfs_y <= '{default:0};
-		position_x <= 0;
-		position_y <= 0;
-		counter_queue <= 0;
-	  map_was_here <= '{default:0};
-		direction <= RIGHT;
-	end else begin
-		queue_bfs_x <= queue_bfs_x_next;
-		queue_bfs_y <= queue_bfs_y_next;
-		position_x <= position_x_next;
-		position_y <= position_y_next;
-		counter_queue <= counter_queue_next;
-	  map_was_here <= map_was_here_next;
-		direction <= direction_next;
-		map_directions <= map_directions_next;
-	end
-end
+	// FSM
+	case(now)
+		IDLE:
+			if (counter_in == 8'd224)
+				if (map[1][2]==1 || map[13][14]==1) next = DEAD;
+				else next = FIND;
+ 		FIND:
+			if (position_x==13 && position_y==13) next = BACK;
+			else if(counter_queue == -1) next = DEAD;
+ 		BACK: if (position_x==1 && position_y==1) next = IDLE;
+ 		DEAD: next = IDLE;
+	endcase
 
-always_comb begin
-	map_was_here_next = map_was_here;
-	counter_queue_next = counter_queue;
-	position_x_next = position_x;
-	position_y_next = position_y;
-	queue_bfs_x_next = queue_bfs_x;
-	queue_bfs_y_next = queue_bfs_y;
-	map_directions_next = map_directions;
-	if (now == IDLE) begin
-		queue_bfs_x_next = '{default:0};
-		queue_bfs_y_next = '{default:0};
-		counter_queue_next = 0;
-		position_x_next = 1;
-		position_y_next = 1;
-		map_was_here_next[1][1] = 1;
-		map_was_here_next[14][0:14] = '{default:0};
-		map_was_here_next[13][0:14] = '{default:0};
-		map_was_here_next[12][0:14] = '{default:0};
-		map_was_here_next[11][0:14] = '{default:0};
-		map_was_here_next[10][0:14] = '{default:0};
-		map_was_here_next[9][0:14] = '{default:0};
-		map_was_here_next[8][0:14] = '{default:0};
-		map_was_here_next[7][0:14] = '{default:0};
-		map_was_here_next[6][0:14] = '{default:0};
-		map_was_here_next[5][0:14] = '{default:0};
-		map_was_here_next[4][0:14] = '{default:0};
-		map_was_here_next[3][0:14] = '{default:0};
-		map_was_here_next[2][0:14] = '{default:0};
-		map_was_here_next[1][2:14] = '{default:0};
-		map_was_here_next[1][0] = 0;
-		map_was_here_next[0][0:14] = '{default:0};
-	end
-	direction_next = direction;
-
-//finding path
-	if (now == FIND) begin
-		if (!map[position_x][position_y + 1] && direction <= RIGHT && !map_was_here[position_x][position_y + 1]) begin
-			queue_bfs_x_next[counter_queue] = position_x;
-			queue_bfs_y_next[counter_queue] = position_y + 1;
-			counter_queue_next = counter_queue + 1;
-			direction_next = UP;
-			map_was_here_next[position_x][position_y + 1] = 1;
-			map_directions_next[position_x][position_y + 1] = LEFT;
-		end else if (!map[position_x - 1][position_y] && direction <= UP && !map_was_here[position_x - 1][position_y]) begin
-			queue_bfs_x_next[counter_queue] = position_x - 1;
-			queue_bfs_y_next[counter_queue] = position_y;
-			counter_queue_next = counter_queue + 1;
-			direction_next = LEFT;
-			map_was_here_next[position_x - 1][position_y] = 1;
-			map_directions_next[position_x - 1][position_y] = DOWN;
-		end else if (!map[position_x][position_y - 1] && direction <= LEFT && !map_was_here[position_x][position_y - 1]) begin
-			queue_bfs_x_next[counter_queue] = position_x;
-			queue_bfs_y_next[counter_queue] = position_y - 1;
-			counter_queue_next = counter_queue + 1;
-			direction_next = DOWN;
-			map_was_here_next[position_x][position_y - 1] = 1;
-			map_directions_next[position_x][position_y - 1] = RIGHT;
-		end else if (!map[position_x + 1][position_y] && direction <= DOWN && !map_was_here[position_x + 1]			[position_y]) begin
-			queue_bfs_x_next[counter_queue] = position_x + 1;
-			queue_bfs_y_next[counter_queue] = position_y;
-			counter_queue_next = counter_queue + 1;
-			direction_next = OVER;
-			map_was_here_next[position_x + 1][position_y] = 1;
-			map_directions_next[position_x + 1][position_y] = UP;
-		
-
-	
-//original traversal: UP -> LEFT -> DOWN -> RIGHT
-// 		if (!map[position_x - 1][position_y] && direction <= UP && !map_was_here[position_x - 1][position_y]) begin
-// 			queue_bfs_x_next[counter_queue] = position_x - 1;
-// 			queue_bfs_y_next[counter_queue] = position_y;
-// 			counter_queue_next = counter_queue + 1;
-// 			direction_next = LEFT;
-// 			map_was_here_next[position_x - 1][position_y] = 1;
-
-// map_directions_next[position_x - 1][position_y] = DOWN;
-
-// 		end else if (!map[position_x][position_y - 1] && direction <= LEFT && !map_was_here[position_x][position_y - 1]) begin
-// 			queue_bfs_x_next[counter_queue] = position_x;
-// 			queue_bfs_y_next[counter_queue] = position_y - 1;
-// 			counter_queue_next = counter_queue + 1;
-// 			direction_next = DOWN;
-// 			map_was_here_next[position_x][position_y - 1] = 1;
-
-// map_directions_next[position_x][position_y - 1] = RIGHT;
-
-
-// 		end else if (!map[position_x + 1][position_y] && direction <= DOWN && !map_was_here[position_x + 1][position_y]) begin
-// 			queue_bfs_x_next[counter_queue] = position_x + 1;
-// 			queue_bfs_y_next[counter_queue] = position_y;
-// 			counter_queue_next = counter_queue + 1;
-// 			direction_next = RIGHT;
-// 			map_was_here_next[position_x + 1][position_y] = 1;
-
-// map_directions_next[position_x + 1][position_y] = UP;
-
-// 		end else if (!map[position_x][position_y + 1] && direction <= RIGHT && !map_was_here[position_x][position_y + 1]) begin
-// 			queue_bfs_x_next[counter_queue] = position_x;
-// 			queue_bfs_y_next[counter_queue] = position_y + 1;
-// 			counter_queue_next = counter_queue + 1;
-// 			direction_next = OVER;
-// 			map_was_here_next[position_x][position_y + 1] = 1;
-
-// map_directions_next[position_x][position_y + 1] = LEFT;
-
-
-		end else if ( counter_queue > 0 ) begin
-		//	position_x_next = queue_bfs_x[counter_queue - 1];
-			position_x_next = queue_bfs_x[0];
-		//	position_y_next = queue_bfs_y[counter_queue - 1];
-			position_y_next = queue_bfs_y[0];
-			counter_queue_next = counter_queue - 1;
-		//  map_was_here_next[position_x][position_y] = 1;
-
-			direction_next = RIGHT;
-			// pop queue
-			queue_bfs_x_next = {queue_bfs_x[1:12], 0};
-			queue_bfs_y_next = {queue_bfs_y[1:12], 0};
-		end else if (counter_queue == 0) begin
-			counter_queue_next = counter_queue - 1;
-			// dead
+	// other things
+	case(now)
+		IDLE:begin
+			queue_bfs_x_next = '{default:0};
+			queue_bfs_y_next = '{default:0};
+			counter_queue_next = 0;
+			position_x_next = 1;
+			position_y_next = 1;
+			map_was_here_next[1][1] = 1;
+			map_was_here_next[14][0:14] = '{default:0};
+			map_was_here_next[13][0:14] = '{default:0};
+			map_was_here_next[12][0:14] = '{default:0};
+			map_was_here_next[11][0:14] = '{default:0};
+			map_was_here_next[10][0:14] = '{default:0};
+			map_was_here_next[9][0:14] = '{default:0};
+			map_was_here_next[8][0:14] = '{default:0};
+			map_was_here_next[7][0:14] = '{default:0};
+			map_was_here_next[6][0:14] = '{default:0};
+			map_was_here_next[5][0:14] = '{default:0};
+			map_was_here_next[4][0:14] = '{default:0};
+			map_was_here_next[3][0:14] = '{default:0};
+			map_was_here_next[2][0:14] = '{default:0};
+			map_was_here_next[1][2:14] = '{default:0};
+			map_was_here_next[1][0] = 0;
+			map_was_here_next[0][0:14] = '{default:0};
 		end
-	end
-//going back
-	else if(now == BACK) begin
-		map_was_here_next[position_x][position_y] = 0;
-		case(map_directions[position_x][position_y])
-			UP: begin
-				position_x_next = position_x - 1;
-				position_y_next = position_y;
+ 		FIND:begin
+			if (!map[position_x][position_y + 1] && !map_was_here[position_x][position_y + 1]) begin
+			// RIGHT
+				queue_bfs_x_next[counter_queue] = position_x;
+				queue_bfs_y_next[counter_queue] = position_y + 1;
+				counter_queue_next = counter_queue + 1;
+				map_was_here_next[position_x][position_y + 1] = 1;
+				map_directions_next[position_x][position_y + 1] = LEFT;
+			end else if (!map[position_x - 1][position_y] && !map_was_here[position_x - 1][position_y]) begin
+			// UP
+				queue_bfs_x_next[counter_queue] = position_x - 1;
+				queue_bfs_y_next[counter_queue] = position_y;
+				counter_queue_next = counter_queue + 1;
+				map_was_here_next[position_x - 1][position_y] = 1;
+				map_directions_next[position_x - 1][position_y] = DOWN;
+			end else if (!map[position_x][position_y - 1] && !map_was_here[position_x][position_y - 1]) begin
+			// LEFT
+				queue_bfs_x_next[counter_queue] = position_x;
+				queue_bfs_y_next[counter_queue] = position_y - 1;
+				counter_queue_next = counter_queue + 1;
+				map_was_here_next[position_x][position_y - 1] = 1;
+				map_directions_next[position_x][position_y - 1] = RIGHT;
+			end else if (!map[position_x + 1][position_y] && !map_was_here[position_x + 1][position_y]) begin
+			// DOWN
+				queue_bfs_x_next[counter_queue] = position_x + 1;
+				queue_bfs_y_next[counter_queue] = position_y;
+				counter_queue_next = counter_queue + 1;
+				map_was_here_next[position_x + 1][position_y] = 1;
+				map_directions_next[position_x + 1][position_y] = UP;
+			end else if ( counter_queue > 0 ) begin
+			// pop queue
+				position_x_next = queue_bfs_x[0];
+				position_y_next = queue_bfs_y[0];
+				counter_queue_next = counter_queue - 1;
+				queue_bfs_x_next = {queue_bfs_x[1:12], 0};
+				queue_bfs_y_next = {queue_bfs_y[1:12], 0};
+			end else if (counter_queue == 0) begin
+				// dead
+				counter_queue_next = counter_queue - 1;
 			end
-			LEFT: begin
-				position_x_next = position_x;
-				position_y_next = position_y - 1;
+			// you see see how to do this a better way Mark
+			// need this to avoid state transition error
+		 	if (position_x == 13 && position_y == 13) begin
+				position_x_next = 13;
+				position_y_next = 13;
 			end
-			DOWN: begin
-				position_x_next = position_x + 1;
-				position_y_next = position_y;
-			end
-			RIGHT: begin
-				position_x_next = position_x;
-				position_y_next = position_y + 1;
-			end
-		endcase
+		end
+ 		BACK:begin
+			out_valid_next = 1;
+			out_x_next = position_y;
+			out_y_next = position_x;
 
-		// if(map_was_here[position_x - 1][position_y]) begin //UP
-		// 	position_x_next = position_x - 1;
-		// 	position_y_next = position_y;
-		// end else if(map_was_here[position_x][position_y - 1]) begin //LEFT
-		// 	position_x_next = position_x;
-		// 	position_y_next = position_y - 1;
-		// end else if(map_was_here[position_x + 1][position_y]) begin //DOWN
-		// 	position_x_next = position_x + 1;
-		// 	position_y_next = position_y;
-		// end else if(map_was_here[position_x][position_y + 1]) begin //RIGHT
-		// 	position_x_next = position_x;
-		// 	position_y_next = position_y + 1;
-		// end else begin
-		// 	position_x_next = position_x;
-		// 	position_y_next = position_y;
-		// 	direction_next = direction;
-		// end
-	end
+			map_was_here_next[position_x][position_y] = 0;
+			case(map_directions[position_x][position_y])
+				UP: begin
+					position_x_next = position_x - 1;
+					position_y_next = position_y;
+				end
+				LEFT: begin
+					position_x_next = position_x;
+					position_y_next = position_y - 1;
+				end
+				DOWN: begin
+					position_x_next = position_x + 1;
+					position_y_next = position_y;
+				end
+				RIGHT: begin
+					position_x_next = position_x;
+					position_y_next = position_y + 1;
+				end
+			endcase
+		end
+ 		DEAD:begin
+			out_valid_next = 1;
+			maze_not_valid_next = 1;
+		end
+	endcase
 end
+
 endmodule
