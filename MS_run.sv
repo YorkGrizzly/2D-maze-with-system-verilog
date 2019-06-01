@@ -130,7 +130,7 @@ always_ff @( posedge clk or negedge rst_n ) begin
 		position_y <= 0;
 		counter_queue <= 0;
 	  map_was_here <= '{default:0};
-		direction <= DOWN;
+		direction <= RIGHT;
 	end else begin
 		queue_bfs_x <= queue_bfs_x_next;
 		queue_bfs_y <= queue_bfs_y_next;
