@@ -67,7 +67,7 @@ int main()
             }
             position = bfs_queue.front();
             bfs_queue.pop();
-            cout << "now at [" << position / 15 << "\t][" << position % 15 << "\t], position at " << position << endl;
+            cout << "now at [" << position / 15 << "\t][" << position % 15 << "\t], position at " << position;
             // if (position - 15 == TERMINAL_POINT_INDEX || position - 1 == TERMINAL_POINT_INDEX || position + 15 == TERMINAL_POINT_INDEX || position + 1 == TERMINAL_POINT_INDEX)
             // {
             //     position = TERMINAL_POINT_INDEX;
@@ -114,6 +114,7 @@ int main()
                 maze_back_direction[position - 15] = UP;
                 cout << " , up ";
             }
+            cout << endl;
         }
         if (position == TERMINAL_POINT_INDEX)
         {
