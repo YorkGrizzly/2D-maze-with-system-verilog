@@ -107,11 +107,11 @@ int main()
     {
         for (int j = 0; j < 15; j++)
         {
-            // file << maze[i][j] << endl;
-            file << maze[i][j] << " ";
+            file << maze[i][j] << endl;
+            // file << maze[i][j] << " ";
             cout << maze[i][j] << " ";
         }
-        file << endl;
+        // file << endl;
         cout << endl;
     }
     file.close();
