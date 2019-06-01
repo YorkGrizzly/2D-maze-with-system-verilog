@@ -208,8 +208,10 @@ always_comb begin
 			counter_queue_next = counter_queue + 1;
 			direction_next = OVER;
 		end else if ( counter_queue > 0 ) begin
-			position_x_next = queue_bfs_x[counter_queue - 1];
-			position_y_next = queue_bfs_y[counter_queue - 1];
+		//	position_x_next = queue_bfs_x[counter_queue - 1];
+			position_x_next = queue_bfs_x[0];
+		//	position_y_next = queue_bfs_y[counter_queue - 1];
+			position_y_next = queue_bfs_y[0];
 			counter_queue_next = counter_queue - 1;
 		  map_was_here_next[position_x][position_y] = 1;
 			direction_next = UP;
@@ -218,24 +220,21 @@ always_comb begin
 			queue_bfs_y_next = {queue_bfs_y[1:12], 0};
 		end
 	end
-//going back (direction now stores returning direction)
-	else if(now == BACK) begin	
-		if(map_was_here[position_x - 1][position_y] && direction!= DOWN) begin //UP
+//going back
+	else if(now == BACK) begin
+		map_was_here_next[position_x][position_y] = 0;
+		if(map_was_here[position_x - 1][position_y]) begin //UP
 			position_x_next = position_x - 1;
 			position_y_next = position_y;
-			direction_next = UP;
-		end else if(map_was_here[position_x][position_y - 1] && direction!= RIGHT) begin //LEFT
+		end else if(map_was_here[position_x][position_y - 1]) begin //LEFT
 			position_x_next = position_x;
 			position_y_next = position_y - 1;
-			direction_next = LEFT;
-		end else if(map_was_here[position_x + 1][position_y] && direction!= UP) begin //DOWN
+		end else if(map_was_here[position_x + 1][position_y]) begin //DOWN
 			position_x_next = position_x + 1;
 			position_y_next = position_y;
-			direction_next = DOWN;
-		end else if(map_was_here[position_x][position_y + 1] && direction!= LEFT) begin //RIGHT
+		end else if(map_was_here[position_x][position_y + 1]) begin //RIGHT
 			position_x_next = position_x;
 			position_y_next = position_y + 1;
-			direction_next = RIGHT;
 		end else begin
 			position_x_next = position_x;
 			position_y_next = position_y;
