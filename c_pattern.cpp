@@ -67,7 +67,7 @@ int main()
             }
             position = bfs_queue.front();
             bfs_queue.pop();
-            cout << "now at [" << position / 15 << "][" << position % 15 << "], position at " << position << endl;
+            cout << "now at [" << position / 15 << "\t][" << position % 15 << "\t], position at " << position << endl;
             // if (position - 15 == TERMINAL_POINT_INDEX || position - 1 == TERMINAL_POINT_INDEX || position + 15 == TERMINAL_POINT_INDEX || position + 1 == TERMINAL_POINT_INDEX)
             // {
             //     position = TERMINAL_POINT_INDEX;
@@ -82,19 +82,13 @@ int main()
                 cout << "found the terminal point!" << endl;
                 break;
             }
-            if (!maze[position - 15])
+            if (!maze[position + 1])
             {
-                bfs_queue.push(position - 15);
-                maze[position - 15] = true;
-                maze_back[position - 15] = true;
-                maze_back_direction[position - 15] = UP;
-            }
-            if (!maze[position - 1])
-            {
-                bfs_queue.push(position - 1);
-                maze[position - 1] = true;
-                maze_back[position - 1] = true;
-                maze_back_direction[position - 1] = LEFT;
+                bfs_queue.push(position + 1);
+                maze[position + 1] = true;
+                maze_back[position + 1] = true;
+                maze_back_direction[position + 1] = RIGHT;
+                cout << " , right ";
             }
             if (!maze[position + 15])
             {
@@ -102,13 +96,23 @@ int main()
                 maze[position + 15] = true;
                 maze_back[position + 15] = true;
                 maze_back_direction[position + 15] = DOWN;
+                cout << " , down ";
             }
-            if (!maze[position + 1])
+            if (!maze[position - 1])
             {
-                bfs_queue.push(position + 1);
-                maze[position + 1] = true;
-                maze_back[position + 1] = true;
-                maze_back_direction[position + 1] = RIGHT;
+                bfs_queue.push(position - 1);
+                maze[position - 1] = true;
+                maze_back[position - 1] = true;
+                maze_back_direction[position - 1] = LEFT;
+                cout << " , left ";
+            }
+            if (!maze[position - 15])
+            {
+                bfs_queue.push(position - 15);
+                maze[position - 15] = true;
+                maze_back[position - 15] = true;
+                maze_back_direction[position - 15] = UP;
+                cout << " , up ";
             }
         }
         if (position == TERMINAL_POINT_INDEX)
@@ -124,7 +128,7 @@ int main()
             // back
             cout << "going back" << endl;
             dead = false;
-            int count = 0;
+            int count = 1;
             bfs_queue.push(TERMINAL_POINT_INDEX);
             maze_back[START_POINT_INDEX] = false;
             maze_back[TERMINAL_POINT_INDEX] = false;
@@ -145,67 +149,55 @@ int main()
                     position = position - 1;
                     break;
                 default:
+                    cout << "unexpection happened : maze_back_direction[" << position / 15 << "][" << position % 15 << "] has no valid value!" << endl;
+                    dead = true;
                     break;
                 }
                 bfs_queue.push(position);
                 count++;
+                if (count >= 169)
+                {
+                    cout << "unexpection happened : can't find back to start point!" << endl;
+                    dead = true;
+                    break;
+                }
             }
-            cout << "counter : " << count << endl;
-            out_x_file << count << endl;
-            out_y_file << count << endl;
-            cout << "path from terminal point :" << endl;
-            while (!bfs_queue.empty())
+            if (!dead)
             {
-                position = bfs_queue.front();
-                bfs_queue.pop();
-                out_x_file << position % 15 << endl;
-                out_y_file << position / 15 << endl;
-                cout << "now at [" << position / 15 << "][" << position % 15 << "], position at " << position << endl;
+                cout << "counter : " << count << endl;
+                out_x_file << count << endl;
+                out_y_file << count << endl;
+                cout << "path from terminal point to start point :" << endl;
+                while (!bfs_queue.empty())
+                {
+                    position = bfs_queue.front();
+                    bfs_queue.pop();
+                    out_x_file << position % 15 << endl;
+                    out_y_file << position / 15 << endl;
+                    cout << "now at [" << position / 15 << "\t][" << position % 15 << "\t], position at " << position;
+                    switch (maze_back_direction[position])
+                    {
+                    case UP:
+                        cout << ", going down" << endl;
+                        break;
+                    case LEFT:
+                        cout << ", going right" << endl;
+                        break;
+                    case DOWN:
+                        cout << ", going up" << endl;
+                        break;
+                    case RIGHT:
+                        cout << ", going left" << endl;
+                        break;
+                    case NONE:
+                        cout << ", its start point, progressing success!" << endl;
+                        break;
+                    default:
+                        cout << "unexpection happened : maze_back_direction[" << position / 15 << "][" << position % 15 << "] has no valid value!" << endl;
+                        break;
+                    }
+                }
             }
-            // while (1)
-            // {
-            //     if (bfs_queue.size() == 0)
-            //     {
-            //         dead = true;
-            //         cout << "can't go back to start point" << endl; // shouldn't happen
-            //         break;
-            //     }
-            //     position = bfs_queue.front();
-            //     bfs_queue.pop();
-            //     count++;
-            //     cout << "now at [" << position / 15 << "][" << position % 15 << "], position at " << position << endl;
-            //     out_x_file << position % 15 << endl;
-            //     out_y_file << position / 15 << endl;
-            //     if (position - 15 == START_POINT_INDEX || position - 1 == START_POINT_INDEX || position + 15 == START_POINT_INDEX || position + 1 == START_POINT_INDEX)
-            //     {
-            //         position = START_POINT_INDEX;
-            //         cout << "now at [" << position / 15 << "][" << position % 15 << "], position at " << position << endl;
-            //         out_x_file << position % 15 << endl;
-            //         out_y_file << position / 15 << endl;
-            //         cout << "found the start point! counter : " << count << endl;
-            //         break;
-            //     }
-            //     if (maze_back[position - 15])
-            //     {
-            //         bfs_queue.push(position - 15);
-            //         maze_back[position - 15] = false;
-            //     }
-            //     if (maze_back[position - 1])
-            //     {
-            //         bfs_queue.push(position - 1);
-            //         maze_back[position - 1] = false;
-            //     }
-            //     if (maze_back[position + 15])
-            //     {
-            //         bfs_queue.push(position + 15);
-            //         maze_back[position + 15] = false;
-            //     }
-            //     if (maze_back[position + 1])
-            //     {
-            //         bfs_queue.push(position + 1);
-            //         maze_back[position + 1] = false;
-            //     }
-            // }
         }
     }
     in_maze_file.close();
