@@ -4,7 +4,6 @@
 #include <ctime>
 #include <queue>
 #include <string>
-#include <algorithm>
 
 using namespace std;
 
@@ -56,8 +55,6 @@ int main()
         bfs_queue.push(START_POINT_INDEX);
         maze[START_POINT_INDEX] = true;
         maze_back[START_POINT_INDEX] = true;
-        // maze[TERMINAL_POINT_INDEX] = true;
-        // maze_back[TERMINAL_POINT_INDEX] = true;
         while (1)
         {
             if (bfs_queue.size() == 0)
@@ -69,17 +66,13 @@ int main()
             position = bfs_queue.front();
             bfs_queue.pop();
             cout << "now at [" << position / 15 << "\t][" << position % 15 << "\t], position at " << position;
-            // if (position - 15 == TERMINAL_POINT_INDEX || position - 1 == TERMINAL_POINT_INDEX || position + 15 == TERMINAL_POINT_INDEX || position + 1 == TERMINAL_POINT_INDEX)
-            // {
-            //     position = TERMINAL_POINT_INDEX;
-            //     queue<int> empty;
-            //     bfs_queue.swap(empty);
-            //     break;
-            // }
             if (position == TERMINAL_POINT_INDEX)
             {
                 queue<int> empty;
-                bfs_queue.swap(empty);
+                while (!bfs_queue.empty())
+                {
+                    bfs_queue.pop();
+                }
                 cout << "found the terminal point!" << endl;
                 break;
             }
