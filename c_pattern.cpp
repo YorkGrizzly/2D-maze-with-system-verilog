@@ -73,7 +73,7 @@ int main()
                 {
                     bfs_queue.pop();
                 }
-                cout << "found the terminal point!" << endl;
+                cout << ", found the terminal point!" << endl;
                 break;
             }
             if (!maze[position + 1])
@@ -84,13 +84,13 @@ int main()
                 maze_back_direction[position + 1] = RIGHT;
                 cout << " , right ";
             }
-            if (!maze[position + 15])
+            if (!maze[position - 15])
             {
-                bfs_queue.push(position + 15);
-                maze[position + 15] = true;
-                maze_back[position + 15] = true;
-                maze_back_direction[position + 15] = DOWN;
-                cout << " , down ";
+                bfs_queue.push(position - 15);
+                maze[position - 15] = true;
+                maze_back[position - 15] = true;
+                maze_back_direction[position - 15] = UP;
+                cout << " , up ";
             }
             if (!maze[position - 1])
             {
@@ -100,13 +100,13 @@ int main()
                 maze_back_direction[position - 1] = LEFT;
                 cout << " , left ";
             }
-            if (!maze[position - 15])
+            if (!maze[position + 15])
             {
-                bfs_queue.push(position - 15);
-                maze[position - 15] = true;
-                maze_back[position - 15] = true;
-                maze_back_direction[position - 15] = UP;
-                cout << " , up ";
+                bfs_queue.push(position + 15);
+                maze[position + 15] = true;
+                maze_back[position + 15] = true;
+                maze_back_direction[position + 15] = DOWN;
+                cout << " , down ";
             }
             cout << endl;
         }

@@ -8,7 +8,7 @@
 #include <stack>
 
 using namespace std;
-// #define SEED 543534
+#define SEED 88
 #define MINIMUM_WALL_NUM 0
 #define START_POINT_INDEX 16
 #define TERMINAL_POINT_INDEX 208
@@ -68,8 +68,8 @@ int main()
     ofstream file;
     file.open("input.txt");
     bool maze[15][15] = {false};
-    srand(time(NULL));
-    // srand(SEED);
+    // srand(time(NULL));
+    srand(SEED);
     for (int i = 0; i < 15; i++)
     {
         maze[0][i] = 1;

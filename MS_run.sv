@@ -47,7 +47,7 @@ logic signed [4:0] counter_queue;// queue index
 logic signed [4:0] counter_queue_next;
 
 logic[2:0] direction, direction_next;
-parameter DOWN = 0, UP = 2, RIGHT = 1, LEFT = 3, OVER = 4;
+parameter DOWN = 3, UP = 1, RIGHT = 0, LEFT = 2, OVER = 4;
 
 parameter IDLE = 2'd0;
 parameter FIND = 2'd1;
@@ -179,18 +179,11 @@ always_comb begin
 
 //finding path
 	if (now == FIND) begin
-		if (!map[position_x + 1][position_y] && direction <= DOWN && !map_was_here[position_x + 1]			[position_y]) begin
-			queue_bfs_x_next[counter_queue] = position_x + 1;
-			queue_bfs_y_next[counter_queue] = position_y;
-			counter_queue_next = counter_queue + 1;
-			direction_next = RIGHT;
-			map_was_here_next[position_x + 1][position_y] = 1;
-			map_directions_next[position_x + 1][position_y] = UP;
 		end else if (!map[position_x][position_y + 1] && direction <= RIGHT && !map_was_here[position_x][position_y + 1]) begin
 			queue_bfs_x_next[counter_queue] = position_x;
 			queue_bfs_y_next[counter_queue] = position_y + 1;
 			counter_queue_next = counter_queue + 1;
-			direction_next = OVER;
+			direction_next = UP;
 			map_was_here_next[position_x][position_y + 1] = 1;
 			map_directions_next[position_x][position_y + 1] = LEFT;
 		end else if (!map[position_x - 1][position_y] && direction <= UP && !map_was_here[position_x - 1][position_y]) begin
@@ -207,6 +200,13 @@ always_comb begin
 			direction_next = DOWN;
 			map_was_here_next[position_x][position_y - 1] = 1;
 			map_directions_next[position_x][position_y - 1] = RIGHT;
+		if (!map[position_x + 1][position_y] && direction <= DOWN && !map_was_here[position_x + 1]			[position_y]) begin
+			queue_bfs_x_next[counter_queue] = position_x + 1;
+			queue_bfs_y_next[counter_queue] = position_y;
+			counter_queue_next = counter_queue + 1;
+			direction_next = OVER;
+			map_was_here_next[position_x + 1][position_y] = 1;
+			map_directions_next[position_x + 1][position_y] = UP;
 		
 
 	
@@ -257,7 +257,7 @@ always_comb begin
 			counter_queue_next = counter_queue - 1;
 		//  map_was_here_next[position_x][position_y] = 1;
 
-			direction_next = DOWN;
+			direction_next = RIGHT;
 			// pop queue
 			queue_bfs_x_next = {queue_bfs_x[1:12], 0};
 			queue_bfs_y_next = {queue_bfs_y[1:12], 0};
