@@ -82,13 +82,16 @@ always_comb begin
 	next = now;
 	out_valid_next = 0;
 	maze_not_valid_next = 0;
+	counter_in_next = 0;
 	case(now)
-		IDLE: if (counter_in == 8'd224) next = FIND;
+		IDLE: if (counter_in == 8'd224)
+					if (map[1][2]==1 || map[13][14]==1) next = DEAD;
+					else next = FIND;
  		FIND:
 			if (position_x==13 && position_y==13) next = BACK;
-			else if(counter_queue == -1/*|| map[1][1]==1 || map[13][13]==1*/) next = DEAD;
+			else if(counter_queue == -1) next = DEAD;
  		BACK: if (position_x==1 && position_y==1) next = IDLE;
- 		DEAD: if (counter_queue==0) next = IDLE;
+ 		DEAD: next = IDLE;
 	endcase
 	if (now == DEAD || now == BACK) begin
 		out_valid_next = (now == BACK)||(now == DEAD);
@@ -179,7 +182,7 @@ always_comb begin
 
 //finding path
 	if (now == FIND) begin
-		end else if (!map[position_x][position_y + 1] && direction <= RIGHT && !map_was_here[position_x][position_y + 1]) begin
+		if (!map[position_x][position_y + 1] && direction <= RIGHT && !map_was_here[position_x][position_y + 1]) begin
 			queue_bfs_x_next[counter_queue] = position_x;
 			queue_bfs_y_next[counter_queue] = position_y + 1;
 			counter_queue_next = counter_queue + 1;
@@ -200,7 +203,7 @@ always_comb begin
 			direction_next = DOWN;
 			map_was_here_next[position_x][position_y - 1] = 1;
 			map_directions_next[position_x][position_y - 1] = RIGHT;
-		if (!map[position_x + 1][position_y] && direction <= DOWN && !map_was_here[position_x + 1]			[position_y]) begin
+		end else if (!map[position_x + 1][position_y] && direction <= DOWN && !map_was_here[position_x + 1]			[position_y]) begin
 			queue_bfs_x_next[counter_queue] = position_x + 1;
 			queue_bfs_y_next[counter_queue] = position_y;
 			counter_queue_next = counter_queue + 1;
@@ -261,6 +264,9 @@ always_comb begin
 			// pop queue
 			queue_bfs_x_next = {queue_bfs_x[1:12], 0};
 			queue_bfs_y_next = {queue_bfs_y[1:12], 0};
+		end else if (counter_queue == 0) begin
+			counter_queue_next = counter_queue - 1;
+			// dead
 		end
 	end
 //going back
