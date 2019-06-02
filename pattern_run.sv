@@ -23,9 +23,9 @@ output reg maze;
 
 integer invalid_count;
 integer lat;
-integer goldnum;
+integer goldnum = 1;
 integer outcount = 0;
-integer gold_x, gold_y;
+integer gold_x = 0, gold_y = 0;
 integer input_file;
 integer output_file_x;
 integer output_file_y;
@@ -46,7 +46,7 @@ initial begin
   give_input;
   f = $fscanf(output_file_x, "%d", goldnum); //scan TA file for number of outputs
   f = $fscanf(output_file_y, "%d", goldnum); //scan TA file for number of outputs
-  repeat(3500)@(negedge clk);
+  repeat(3001)@(negedge clk);
   YOU_PASS_task;
 end
 
@@ -86,7 +86,7 @@ always@(negedge clk) begin
     $display("---------------------------------------------\n\n");
     $display("        Latency over 3000 cycles!            \n\n");
     $display("---------------------------------------------");
-    #(1000.0); $finish;
+    $finish;
   end
 end
 
