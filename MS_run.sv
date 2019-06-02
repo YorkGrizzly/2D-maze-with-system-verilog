@@ -29,10 +29,10 @@ logic [1:0]map_directions_next [0:14][0:14];
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
 
-logic [3:0] queue_bfs_x[0:12];
-logic [3:0] queue_bfs_y[0:12];
-logic [3:0] queue_bfs_x_next[0:12];
-logic [3:0] queue_bfs_y_next[0:12];
+logic [3:0] queue_bfs_x[0:13];
+logic [3:0] queue_bfs_y[0:13];
+logic [3:0] queue_bfs_x_next[0:13];
+logic [3:0] queue_bfs_y_next[0:13];
 logic [3:0] position_x;// current position x
 logic [3:0] position_y;// current position y
 logic [3:0] position_x_next;
@@ -152,23 +152,8 @@ always_comb begin
 			counter_queue_next = 0;
 			position_x_next = 1;
 			position_y_next = 1;
+			map_was_here_next = '{default:0};
 			map_was_here_next[1][1] = 1;
-			map_was_here_next[14][0:14] = '{default:0};
-			map_was_here_next[13][0:14] = '{default:0};
-			map_was_here_next[12][0:14] = '{default:0};
-			map_was_here_next[11][0:14] = '{default:0};
-			map_was_here_next[10][0:14] = '{default:0};
-			map_was_here_next[9][0:14] = '{default:0};
-			map_was_here_next[8][0:14] = '{default:0};
-			map_was_here_next[7][0:14] = '{default:0};
-			map_was_here_next[6][0:14] = '{default:0};
-			map_was_here_next[5][0:14] = '{default:0};
-			map_was_here_next[4][0:14] = '{default:0};
-			map_was_here_next[3][0:14] = '{default:0};
-			map_was_here_next[2][0:14] = '{default:0};
-			map_was_here_next[1][2:14] = '{default:0};
-			map_was_here_next[1][0] = 0;
-			map_was_here_next[0][0:14] = '{default:0};
 		end
  		FIND:begin
 			if (!map[position_x][position_y + 1] && !map_was_here[position_x][position_y + 1]) begin
@@ -204,8 +189,8 @@ always_comb begin
 				position_x_next = queue_bfs_x[0];
 				position_y_next = queue_bfs_y[0];
 				counter_queue_next = counter_queue - 1;
-				queue_bfs_x_next = {queue_bfs_x[1:12], 0};
-				queue_bfs_y_next = {queue_bfs_y[1:12], 0};
+				queue_bfs_x_next = {queue_bfs_x[1:13], 0};
+				queue_bfs_y_next = {queue_bfs_y[1:13], 0};
 			end else if (counter_queue == 0) begin
 				// dead
 				counter_queue_next = counter_queue - 1;
