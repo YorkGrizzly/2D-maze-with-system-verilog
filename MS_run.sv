@@ -20,11 +20,9 @@ logic [3:0] out_x_next, out_y_next ;
 
 logic map [0:14][0:14];
 logic map_next [0:14][0:14];
-// logic map_was_here [0:14][0:14];
-// logic map_was_here_next [0:14][0:14];
 //coming from which direction
-logic [1:0]map_directions [0:14][0:14];
-logic [1:0]map_directions_next [0:14][0:14];
+logic [1:0]map_directions [1:13][1:13];
+logic [1:0]map_directions_next [1:13][1:13];
 
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
@@ -67,7 +65,6 @@ always_ff @( posedge clk or negedge rst_n ) begin
 	// running
 		queue_bfs_x <= '{default:0};
 		queue_bfs_y <= '{default:0};
-	  	// map_was_here <= '{default:0};
 		position_x <= 0;
 		position_y <= 0;
 		counter_queue <= 0;
@@ -85,7 +82,6 @@ always_ff @( posedge clk or negedge rst_n ) begin
 	// running
 		queue_bfs_x <= queue_bfs_x_next;
 		queue_bfs_y <= queue_bfs_y_next;
-	  	// map_was_here <= map_was_here_next;
 		position_x <= position_x_next;
 		position_y <= position_y_next;
 		counter_queue <= counter_queue_next;
@@ -103,7 +99,6 @@ always_comb begin
 	out_x_next = 0;
 	out_y_next = 0;
 	
-	// map_was_here_next = map_was_here;
 	counter_queue_next = counter_queue;
 	position_x_next = position_x;
 	position_y_next = position_y;
@@ -167,32 +162,30 @@ always_comb begin
 			counter_queue_next = 0;
 			position_x_next = 1;
 			position_y_next = 1;
-			// map_was_here_next = '{default:0};
-			// map_was_here_next[1][1] = 1;
 		end
  		FIND:begin
-			if (!map[position_x][position_y + 1]/* && !map_was_here[position_x][position_y + 1]*/) begin
+			if (!map[position_x][position_y + 1]) begin
 			// RIGHT
 				queue_bfs_x_next[counter_queue] = position_x;
 				queue_bfs_y_next[counter_queue] = position_y + 1;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x][position_y + 1] = 1;
 				map_directions_next[position_x][position_y + 1] = LEFT;
-			end else if (!map[position_x - 1][position_y]/* && !map_was_here[position_x - 1][position_y]*/) begin
+			end else if (!map[position_x - 1][position_y]) begin
 			// UP
 				queue_bfs_x_next[counter_queue] = position_x - 1;
 				queue_bfs_y_next[counter_queue] = position_y;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x - 1][position_y] = 1;
 				map_directions_next[position_x - 1][position_y] = DOWN;
-			end else if (!map[position_x][position_y - 1]/* && !map_was_here[position_x][position_y - 1]*/) begin
+			end else if (!map[position_x][position_y - 1]) begin
 			// LEFT
 				queue_bfs_x_next[counter_queue] = position_x;
 				queue_bfs_y_next[counter_queue] = position_y - 1;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x][position_y - 1] = 1;
 				map_directions_next[position_x][position_y - 1] = RIGHT;
-			end else if (!map[position_x + 1][position_y]/* && !map_was_here[position_x + 1][position_y]*/) begin
+			end else if (!map[position_x + 1][position_y]) begin
 			// DOWN
 				queue_bfs_x_next[counter_queue] = position_x + 1;
 				queue_bfs_y_next[counter_queue] = position_y;
@@ -224,7 +217,6 @@ always_comb begin
 			out_x_next = position_y;
 			out_y_next = position_x;
 
-			// map_was_here_next[position_x][position_y] = 0;
 			case(map_directions[position_x][position_y])
 				UP: begin
 					position_x_next = position_x - 1;
