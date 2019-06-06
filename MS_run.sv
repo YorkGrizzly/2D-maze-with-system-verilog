@@ -39,9 +39,9 @@ logic [3:0] position_y_next;
 logic [3:0] counter_queue;// queue index
 logic [3:0] counter_queue_next;
 
-parameter RIGHT = 0;
+parameter LEFT 	= 0;
 parameter UP 	= 1;
-parameter LEFT 	= 2;
+parameter RIGHT = 2;
 parameter DOWN 	= 3;
 
 logic [1:0] now;
@@ -156,20 +156,6 @@ always_comb begin
 		 	if (position_x == 13 && position_y == 13) begin
 			// found
 			 	next = BACK;
-			end else if (!map[position_x][position_y + 1]) begin
-			// RIGHT
-				queue_bfs_x_next[counter_queue] = position_x;
-				queue_bfs_y_next[counter_queue] = position_y + 1;
-				counter_queue_next = counter_queue + 1;
-				map_next[position_x][position_y + 1] = 1;
-				map_directions_next[position_x][position_y + 1] = LEFT;
-			end else if (!map[position_x - 1][position_y]) begin
-			// UP
-				queue_bfs_x_next[counter_queue] = position_x - 1;
-				queue_bfs_y_next[counter_queue] = position_y;
-				counter_queue_next = counter_queue + 1;
-				map_next[position_x - 1][position_y] = 1;
-				map_directions_next[position_x - 1][position_y] = DOWN;
 			end else if (!map[position_x][position_y - 1]) begin
 			// LEFT
 				queue_bfs_x_next[counter_queue] = position_x;
@@ -177,6 +163,20 @@ always_comb begin
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x][position_y - 1] = 1;
 				map_directions_next[position_x][position_y - 1] = RIGHT;
+			end else if (!map[position_x - 1][position_y]) begin
+			// UP
+				queue_bfs_x_next[counter_queue] = position_x - 1;
+				queue_bfs_y_next[counter_queue] = position_y;
+				counter_queue_next = counter_queue + 1;
+				map_next[position_x - 1][position_y] = 1;
+				map_directions_next[position_x - 1][position_y] = DOWN;
+			end else if (!map[position_x][position_y + 1]) begin
+			// RIGHT
+				queue_bfs_x_next[counter_queue] = position_x;
+				queue_bfs_y_next[counter_queue] = position_y + 1;
+				counter_queue_next = counter_queue + 1;
+				map_next[position_x][position_y + 1] = 1;
+				map_directions_next[position_x][position_y + 1] = LEFT;
 			end else if (!map[position_x + 1][position_y]) begin
 			// DOWN
 				queue_bfs_x_next[counter_queue] = position_x + 1;
