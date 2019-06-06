@@ -36,8 +36,8 @@ logic [3:0] position_y;// current position y
 logic [3:0] position_x_next;
 logic [3:0] position_y_next;
 
-logic signed [4:0] counter_queue;// queue index
-logic signed [4:0] counter_queue_next;
+logic [3:0] counter_queue;// queue index
+logic [3:0] counter_queue_next;
 
 parameter RIGHT = 0;
 parameter UP 	= 1;
@@ -55,20 +55,10 @@ always_ff @( posedge clk or negedge rst_n ) begin
 	if (!rst_n) begin
 	// inputting
 		now <= IDLE;
-		map <= '{default:0};
 		out_valid <= 0;
 		maze_not_valid <= 0;
 		out_x <= 0;
 		out_y <= 0;
-		counter_in <= 0;
-
-	// running
-		queue_bfs_x <= '{default:0};
-		queue_bfs_y <= '{default:0};
-		position_x <= 0;
-		position_y <= 0;
-		counter_queue <= 0;
-		map_directions <= '{default:0};
 	end else begin
 	// inputting
 		now <= next;
@@ -99,7 +89,7 @@ always_comb begin
 	out_x_next = 0;
 	out_y_next = 0;
 	
-	counter_queue_next = counter_queue;
+	counter_queue_next = 0;
 	position_x_next = position_x;
 	position_y_next = position_y;
 	queue_bfs_x_next = queue_bfs_x;
@@ -147,9 +137,9 @@ always_comb begin
 			if (counter_in == 8'd224)
 				if (map[1][2]==1 || map[13][14]==1) next = DEAD;
 				else next = FIND;
- 		FIND:
-			if (position_x==13 && position_y==13) next = BACK;
-			else if(counter_queue == -1) next = DEAD;
+ 		// FIND:
+			// if (position_x==13 && position_y==13) next = BACK;
+			// else if(counter_queue == 0) next = DEAD;
  		BACK: if (position_x==1 && position_y==1) next = IDLE;
  		DEAD: next = IDLE;
 	endcase
@@ -157,14 +147,16 @@ always_comb begin
 	// other things
 	case(now)
 		IDLE:begin
-			queue_bfs_x_next = '{default:0};
-			queue_bfs_y_next = '{default:0};
-			counter_queue_next = 0;
 			position_x_next = 1;
 			position_y_next = 1;
 		end
  		FIND:begin
-			if (!map[position_x][position_y + 1]) begin
+			// you see see how to do this a better way Mark
+			// need this to avoid state transition error
+		 	if (position_x == 13 && position_y == 13) begin
+			// found
+			 	next = BACK;
+			end else if (!map[position_x][position_y + 1]) begin
 			// RIGHT
 				queue_bfs_x_next[counter_queue] = position_x;
 				queue_bfs_y_next[counter_queue] = position_y + 1;
@@ -202,14 +194,8 @@ always_comb begin
 				queue_bfs_y_next[0:12] = queue_bfs_y[1:13];
 				queue_bfs_y_next[13] = 0;
 			end else if (counter_queue == 0) begin
-				// dead
-				counter_queue_next = counter_queue - 1;
-			end
-			// you see see how to do this a better way Mark
-			// need this to avoid state transition error
-		 	if (position_x == 13 && position_y == 13) begin
-				position_x_next = 13;
-				position_y_next = 13;
+			// dead
+				next = DEAD;
 			end
 		end
  		BACK:begin
