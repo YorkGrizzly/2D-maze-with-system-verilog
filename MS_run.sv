@@ -27,17 +27,17 @@ logic [1:0]map_directions_next [1:13][1:13];
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
 
-logic [3:0] queue_bfs_x[0:13];
-logic [3:0] queue_bfs_y[0:13];
-logic [3:0] queue_bfs_x_next[0:13];
-logic [3:0] queue_bfs_y_next[0:13];
+logic [3:0] queue_bfs_x[0:16];
+logic [3:0] queue_bfs_y[0:16];
+logic [3:0] queue_bfs_x_next[0:16];
+logic [3:0] queue_bfs_y_next[0:16];
 logic [3:0] position_x;// current position x
 logic [3:0] position_y;// current position y
 logic [3:0] position_x_next;
 logic [3:0] position_y_next;
 
-logic [3:0] counter_queue;// queue index
-logic [3:0] counter_queue_next;
+logic [4:0] counter_queue;// queue index
+logic [4:0] counter_queue_next;
 
 parameter LEFT 	= 0;
 parameter UP 	= 1;
@@ -189,10 +189,10 @@ always_comb begin
 				position_x_next = queue_bfs_x[0];
 				position_y_next = queue_bfs_y[0];
 				counter_queue_next = counter_queue - 1;
-				queue_bfs_x_next[0:12] = queue_bfs_x[1:13];
-				queue_bfs_x_next[13] = 0;
-				queue_bfs_y_next[0:12] = queue_bfs_y[1:13];
-				queue_bfs_y_next[13] = 0;
+				queue_bfs_x_next[0:15] = queue_bfs_x[1:16];
+				queue_bfs_x_next[16] = 0;
+				queue_bfs_y_next[0:15] = queue_bfs_y[1:16];
+				queue_bfs_y_next[16] = 0;
 			end else if (counter_queue == 0) begin
 			// dead
 				next = DEAD;

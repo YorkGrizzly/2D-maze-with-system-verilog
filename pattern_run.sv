@@ -30,7 +30,8 @@ integer input_file;
 integer output_file_x;
 integer output_file_y;
 integer f;
-//integer patcount;
+integer PAT_NUM = 100;
+integer patcount;
 
 always	#(CYCLE/2.0) clk = ~clk;
 
@@ -43,10 +44,14 @@ initial begin
   output_file_x = $fopen("out_x.txt", "r");
   output_file_y = $fopen("out_y.txt", "r");
   reset_check;
-  give_input;
-  f = $fscanf(output_file_x, "%d", goldnum); //scan TA file for number of outputs
-  f = $fscanf(output_file_y, "%d", goldnum); //scan TA file for number of outputs
-  repeat(3001)@(negedge clk);
+  for (patcount = 0; patcount < PAT_NUM; patcount = patcount + 1) begin
+    give_input;
+    f = $fscanf(output_file_x, "%d", goldnum); //scan TA file for number of outputs
+    f = $fscanf(output_file_y, "%d", goldnum); //scan TA file for number of outputs
+    @(negedge out_valid);
+    @(negedge clk);
+  end
+  repeat(500)@(negedge clk);
   YOU_PASS_task;
 end
 
@@ -58,7 +63,7 @@ always@(negedge clk) begin
     f = $fscanf(output_file_y, "%d", gold_y);
     if(out_x!==gold_x||out_y!==gold_y) begin  //wrong output
       $display("---------------------------------------------\n\n");
-      $display("   correct answer x: %d, y: %d\n   your answer  out_x: %d, out_y: %d  at %t\n\n", gold_x,   gold_y, out_x, out_y, $time);
+      $display("   correct answer x: %d, y: %d\n   your answer  out_x: %d, out_y: %d  at %t, pattern number %d\n\n", gold_x,   gold_y, out_x, out_y, $time, patcount + 1);
       $display("---------------------------------------------");
       repeat(4)@(negedge clk); $finish;
     end
@@ -82,7 +87,7 @@ end
 always@(negedge clk) begin
   if(in_valid===1||out_valid===1) lat = 0;
   else lat = lat + 1;
-  if(lat > 3000) begin
+  if(lat > 1000) begin
     $display("---------------------------------------------\n\n");
     $display("        Latency over 3000 cycles!            \n\n");
     $display("---------------------------------------------");
@@ -180,5 +185,3 @@ end endtask
 
 
 endmodule
-
-
