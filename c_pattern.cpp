@@ -196,6 +196,12 @@ int main()
                         }
                     }
                 }
+                else
+                {
+                    cout << "its a dead maze" << endl;
+                    out_x_file << "0" << endl;
+                    out_y_file << "0" << endl;
+                }
             }
         }
     }
