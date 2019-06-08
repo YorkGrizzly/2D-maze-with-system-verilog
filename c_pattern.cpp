@@ -198,7 +198,7 @@ int main()
                 }
             }
         }
-        else
+        if (dead == true)
         {
             cout << "its a dead maze" << endl;
             out_x_file << "0" << endl;
