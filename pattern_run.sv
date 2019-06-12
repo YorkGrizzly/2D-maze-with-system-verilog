@@ -99,7 +99,7 @@ always@(negedge clk) begin
   else lat = lat + 1;
   if(lat > 1000) begin
     $display("---------------------------------------------\n\n");
-    $display("        Latency over 3000 cycles!            \n\n");
+    $display("        Latency over 1000 cycles!            \n\n");
     $display("---------------------------------------------");
     $finish;
   end
