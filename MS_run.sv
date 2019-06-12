@@ -18,13 +18,11 @@ logic out_valid_next;
 logic maze_not_valid_next;
 logic [3:0] out_x_next, out_y_next ;
 
-logic map [0:14][0:14];
-logic map_next [0:14][0:14];
+logic map [0:12][0:12];
+logic map_next [0:12][0:12];
 //coming from which direction
 logic [1:0]map_directions [0:12][0:12];
 logic [1:0]map_directions_next [0:12][0:12];
-// logic [1:0]map_directions [0:13][0:13];
-// logic [1:0]map_directions_next [0:13][0:13];
 
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
@@ -97,70 +95,63 @@ always_comb begin
 	queue_bfs_x_next = queue_bfs_x;
 	queue_bfs_y_next = queue_bfs_y;
 	map_directions_next = map_directions;
-	
-	
-	map_next[1][0] = 1;
-	map_next[1][1] = 1;
-	map_next[0][0:14] = '{default:1};
 
 	// input
 	if(in_valid) begin
 		counter_in_next = counter_in + 1;
-		map_next[14][0:13] = map[14][1:14];
-		map_next[14][14] 	 = maze;
-		map_next[13][0:13] = map[13][1:14];
-		map_next[13][14] 	 = map[14][0];
-		map_next[12][0:13] = map[12][1:14];
-		map_next[12][14] 	 = map[13][0];
-		map_next[11][0:13] = map[11][1:14];
-		map_next[11][14] 	 = map[12][0];
-		map_next[10][0:13] = map[10][1:14];
-		map_next[10][14] 	 = map[11][0];
-		map_next[9][0:13]  = map[9][1:14];
-		map_next[9][14] 	 = map[10][0];
-		map_next[8][0:13]  = map[8][1:14];
-		map_next[8][14] 	 = map[9][0];
-		map_next[7][0:13]  = map[7][1:14];
-		map_next[7][14] 	 = map[8][0];
-		map_next[6][0:13]  = map[6][1:14];
-		map_next[6][14] 	 = map[7][0];
-		map_next[5][0:13]  = map[5][1:14];
-		map_next[5][14] 	 = map[6][0];
-		map_next[4][0:13]  = map[4][1:14];
-		map_next[4][14] 	 = map[5][0];
-		map_next[3][0:13]  = map[3][1:14];
-		map_next[3][14] 	 = map[4][0];
-		map_next[2][0:13]  = map[2][1:14];
-		map_next[2][14] 	 = map[3][0];
-		map_next[1][2:13]  = map[1][3:14];
-		map_next[1][14] 	 = map[2][0];
-		// map_next[0][0:13]  = map[0][1:14];
-		// map_next[0][14] 	 = map[1][0];
+		if (counter_in > 14 && counter_in < 210 && (counter_in % 15 != 0) && (counter_in % 15 != 14)) begin
+			map_next[12][0:11] = map[12][1:12];
+			map_next[12][12] 	 = maze;
+			map_next[11][0:11] = map[11][1:12];
+			map_next[11][12] 	 = map[12][0];
+			map_next[10][0:11] = map[10][1:12];
+			map_next[10][12] 	 = map[11][0];
+			map_next[9][0:11]  = map[9][1:12];
+			map_next[9][12] 	 = map[10][0];
+			map_next[8][0:11]  = map[8][1:12];
+			map_next[8][12] 	 = map[9][0];
+			map_next[7][0:11]  = map[7][1:12];
+			map_next[7][12] 	 = map[8][0];
+			map_next[6][0:11]  = map[6][1:12];
+			map_next[6][12] 	 = map[7][0];
+			map_next[5][0:11]  = map[5][1:12];
+			map_next[5][12] 	 = map[6][0];
+			map_next[4][0:11]  = map[4][1:12];
+			map_next[4][12] 	 = map[5][0];
+			map_next[3][0:11]  = map[3][1:12];
+			map_next[3][12] 	 = map[4][0];
+			map_next[2][0:11]  = map[2][1:12];
+			map_next[2][12] 	 = map[3][0];
+			map_next[1][0:11]  = map[1][1:12];
+			map_next[1][12] 	 = map[2][0];
+			map_next[0][0:11]  = map[0][1:12];
+			map_next[0][12] 	 = map[1][0];
+		end
 	end
 
 	// FSM
 	case(now)
 		IDLE:
 			if (counter_in == 8'd224)
-				if (map[1][2]==1 || map[13][14]==1) next = DEAD;
+				if (map[0][1]==1 || map[12][13]==1) next = DEAD;
 				else next = FIND;
  		// FIND:
 			// if (position_x==13 && position_y==13) next = BACK;
 			// else if(counter_queue == 0) next = DEAD;
- 		BACK: if (position_x==1 && position_y==1) next = IDLE;
+ 		BACK: if (position_x == 0 && position_y == 0) next = IDLE;
  		DEAD: next = IDLE;
 	endcase
 
 	// other things
 	case(now)
 		IDLE:begin
-			position_x_next = 1;
-			position_y_next = 1;
+			position_x_next = 0;
+			position_y_next = 0;
 		end
  		FIND:begin
 			// you see see how to do this a better way Mark
 			// need this to avoid state transition error
-		 	if (position_x == 13 && position_y == 13) begin
+		 	if (position_x == 12 && position_y == 12) begin
 			// found
 			 	next = BACK;
 			end else if (!map[position_x][position_y - 1]) begin
@@ -169,28 +160,28 @@ always_comb begin
 				queue_bfs_y_next[counter_queue] = position_y - 1;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x][position_y - 1] = 1;
-				map_directions_next[position_x - 1][position_y - 2] = RIGHT;
+				map_directions_next[position_x][position_y - 1] = RIGHT;
 			end else if (!map[position_x - 1][position_y]) begin
 			// UP
 				queue_bfs_x_next[counter_queue] = position_x - 1;
 				queue_bfs_y_next[counter_queue] = position_y;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x - 1][position_y] = 1;
-				map_directions_next[position_x - 2][position_y - 1] = DOWN;
+				map_directions_next[position_x - 1][position_y] = DOWN;
 			end else if (!map[position_x][position_y + 1]) begin
 			// RIGHT
 				queue_bfs_x_next[counter_queue] = position_x;
 				queue_bfs_y_next[counter_queue] = position_y + 1;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x][position_y + 1] = 1;
-				map_directions_next[position_x - 1][position_y] = LEFT;
+				map_directions_next[position_x][position_y + 1] = LEFT;
 			end else if (!map[position_x + 1][position_y]) begin
 			// DOWN
 				queue_bfs_x_next[counter_queue] = position_x + 1;
 				queue_bfs_y_next[counter_queue] = position_y;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x + 1][position_y] = 1;
-				map_directions_next[position_x][position_y - 1] = UP;
+				map_directions_next[position_x + 1][position_y] = UP;
 			end else if ( counter_queue > 0 ) begin
 			// pop queue
 				position_x_next = queue_bfs_x[0];
@@ -207,10 +198,10 @@ always_comb begin
 		end
  		BACK:begin
 			out_valid_next = 1;
-			out_x_next = position_y;
-			out_y_next = position_x;
+			out_x_next = position_y + 1;
+			out_y_next = position_x + 1;
 
-			case(map_directions[position_x - 1][position_y - 1])
+			case(map_directions[position_x][position_y])
 				UP: begin
 					position_x_next = position_x - 1;
 					position_y_next = position_y;
