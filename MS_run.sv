@@ -21,8 +21,10 @@ logic [3:0] out_x_next, out_y_next ;
 logic map [0:14][0:14];
 logic map_next [0:14][0:14];
 //coming from which direction
-logic [1:0]map_directions [1:13][1:13];
-logic [1:0]map_directions_next [1:13][1:13];
+logic [1:0]map_directions [0:12][0:12];
+logic [1:0]map_directions_next [0:12][0:12];
+// logic [1:0]map_directions [0:13][0:13];
+// logic [1:0]map_directions_next [0:13][0:13];
 
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
@@ -95,6 +97,11 @@ always_comb begin
 	queue_bfs_x_next = queue_bfs_x;
 	queue_bfs_y_next = queue_bfs_y;
 	map_directions_next = map_directions;
+	
+	
+	map_next[1][0] = 1;
+	map_next[1][1] = 1;
+	map_next[0][0:14] = '{default:1};
 
 	// input
 	if(in_valid) begin
@@ -125,10 +132,10 @@ always_comb begin
 		map_next[3][14] 	 = map[4][0];
 		map_next[2][0:13]  = map[2][1:14];
 		map_next[2][14] 	 = map[3][0];
-		map_next[1][0:13]  = map[1][1:14];
+		map_next[1][2:13]  = map[1][3:14];
 		map_next[1][14] 	 = map[2][0];
-		map_next[0][0:13]  = map[0][1:14];
-		map_next[0][14] 	 = map[1][0];
+		// map_next[0][0:13]  = map[0][1:14];
+		// map_next[0][14] 	 = map[1][0];
 	end
 
 	// FSM
@@ -162,28 +169,28 @@ always_comb begin
 				queue_bfs_y_next[counter_queue] = position_y - 1;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x][position_y - 1] = 1;
-				map_directions_next[position_x][position_y - 1] = RIGHT;
+				map_directions_next[position_x - 1][position_y - 2] = RIGHT;
 			end else if (!map[position_x - 1][position_y]) begin
 			// UP
 				queue_bfs_x_next[counter_queue] = position_x - 1;
 				queue_bfs_y_next[counter_queue] = position_y;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x - 1][position_y] = 1;
-				map_directions_next[position_x - 1][position_y] = DOWN;
+				map_directions_next[position_x - 2][position_y - 1] = DOWN;
 			end else if (!map[position_x][position_y + 1]) begin
 			// RIGHT
 				queue_bfs_x_next[counter_queue] = position_x;
 				queue_bfs_y_next[counter_queue] = position_y + 1;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x][position_y + 1] = 1;
-				map_directions_next[position_x][position_y + 1] = LEFT;
+				map_directions_next[position_x - 1][position_y] = LEFT;
 			end else if (!map[position_x + 1][position_y]) begin
 			// DOWN
 				queue_bfs_x_next[counter_queue] = position_x + 1;
 				queue_bfs_y_next[counter_queue] = position_y;
 				counter_queue_next = counter_queue + 1;
 				map_next[position_x + 1][position_y] = 1;
-				map_directions_next[position_x + 1][position_y] = UP;
+				map_directions_next[position_x][position_y - 1] = UP;
 			end else if ( counter_queue > 0 ) begin
 			// pop queue
 				position_x_next = queue_bfs_x[0];
@@ -203,7 +210,7 @@ always_comb begin
 			out_x_next = position_y;
 			out_y_next = position_x;
 
-			case(map_directions[position_x][position_y])
+			case(map_directions[position_x - 1][position_y - 1])
 				UP: begin
 					position_x_next = position_x - 1;
 					position_y_next = position_y;
