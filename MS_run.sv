@@ -27,10 +27,10 @@ logic [1:0]	map_directions_next [0:12][0:12];
 logic [7:0] counter_in;
 logic [7:0] counter_in_next;
 
-logic [3:0] queue_bfs_x [0:16];
-logic [3:0] queue_bfs_y [0:16];
-logic [3:0] queue_bfs_x_next [0:16];
-logic [3:0] queue_bfs_y_next [0:16];
+logic [3:0] queue_bfs_x [0:23];
+logic [3:0] queue_bfs_y [0:23];
+logic [3:0] queue_bfs_x_next [0:23];
+logic [3:0] queue_bfs_y_next [0:23];
 
 logic [4:0] counter_queue;// queue index
 logic [4:0] counter_queue_next;
@@ -61,10 +61,10 @@ always_ff @( posedge clk or negedge rst_n ) begin
 		out_x 			<= 0;
 		out_y 			<= 0;
 
-		// counter_in <= 0;
 		// map <= '{default:0};
 		// map_directions <= '{default:0};
-		// counter_queue <= 0;
+		counter_in <= 0;
+		counter_queue <= 0;
 		queue_bfs_x <= '{default:0};
 		queue_bfs_y <= '{default:0};
 	end else begin
@@ -160,10 +160,10 @@ always_comb begin
 				next = DEAD;
 			end else begin
 				// pop queue
-				queue_bfs_x_next[0:15] 	= queue_bfs_x[1:16];
-				queue_bfs_x_next[16] 	= 0;
-				queue_bfs_y_next[0:15] 	= queue_bfs_y[1:16];
-				queue_bfs_y_next[16] 	= 0;
+				queue_bfs_x_next[0:22] 	= queue_bfs_x[1:23];
+				queue_bfs_x_next[23] 	= 0;
+				queue_bfs_y_next[0:22] 	= queue_bfs_y[1:23];
+				queue_bfs_y_next[23] 	= 0;
 				x1 = 0;
 				if (!map[queue_bfs_x[0]][queue_bfs_y[0] - 1]) begin
 				// LEFT
